@@ -1,6 +1,6 @@
 ### Backup and Restore ZSH history
 
-- Pretty straightforward python script that can backup and restore your zsh history file to a sql db
+- Simple python script that can backup and restore your zsh history file to a sql db
 - Dedups commands, and prepends any commands that were in the db but not in the history file
 - Accepts a max length parameter
     - This does not truncate your existing file
