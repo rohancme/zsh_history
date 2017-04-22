@@ -117,4 +117,4 @@ if __name__ == "__main__":
     if (args.backup):
         backup(args.path, args.dbname)
     if (args.restore):
-        restore(args.path, args.dbname)
+        restore(args.path, args.dbname, args.maxlines)
