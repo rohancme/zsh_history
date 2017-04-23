@@ -40,5 +40,9 @@ Restore:
 
 - Just add the restore command to your ~/.zshrc file! (with the path from $HOME of course)
 
+### Backing up your DB
+
+- I've scheduled a launchd task on my mac to push my db to git every evening. [Here's](https://github.com/rchakra3/Utils/tree/master/scripts/zsh_backup) a link to the scripts
+
 
 ***Feedback and comments welcome!***
