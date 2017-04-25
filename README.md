@@ -6,7 +6,7 @@
 - Dedups commands, and prepends any commands that were in the db but not in the history file
 - Accepts a max length parameter
     - This does not truncate your existing file
-    - If max length is larger than the size of your existing file, no new commands will be added to your history file
+    - If max length is <= than the size of your existing file, no new commands will be added to your history file
     - Otherwise, it will pull commands based on their timestamps until max length is reached
 
 ### Running it
