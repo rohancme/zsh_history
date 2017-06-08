@@ -15,7 +15,6 @@ def init_db(db_name=default_db_location):
     conn = sqlite3.connect(db_name)
     table_check = "SELECT name FROM sqlite_master WHERE type=\'table\'"\
                   " AND name=\'" + default_table_name + "\'"
-    print table_check
     cursor = conn.cursor()
     cursor.execute(table_check)
     table_exists = True if len(cursor.fetchall()) > 0 else False
@@ -43,17 +42,21 @@ def backup(history_path=None, db_name='zsh_history.db'):
             cmd = arr[1] if len(arr) > 1 else ""
             # Handle empty lines
             if cmd != "":
-                timestamp = int(metadata.split(': ')[1].split(':')[0])
-            cmd_dict[cmd] = (line, timestamp)
+                try:
+                    timestamp = int(metadata.split(': ')[1].split(':')[0])
+                    cmd_dict[cmd] = (line, timestamp)
+                except:
+                    # if a cmd can't be parsed ignore it
+                    pass
 
     rows = []
     for cmd, (line, timestamp) in cmd_dict.iteritems():
         rows = rows + [(cmd, line, timestamp)]
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
-    cursor.executemany("REPLACE INTO " + default_table_name +
-                       " ('command','history_line', 'timestamp')" +
-                       " VALUES(?,?,?)", rows)
+    cursor.executemany(u"REPLACE INTO " + default_table_name +
+                       u" ('command','history_line', 'timestamp')" +
+                       u" VALUES(?,?,?)", rows)
     conn.commit()
     conn.close()
 
