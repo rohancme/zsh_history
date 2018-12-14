@@ -33,6 +33,9 @@ def backup(history_path=None, db_name='zsh_history.db'):
     if (history_path is None):
         history_path = default_hist_location
 
+    if not (os.path.exists(history_path) and os.path.isfile(history_path)):
+        print("Invalid path to zsh history:" + history_path)
+        exit(-1)
     cmd_dict = {}
     with open(history_path, "r", encoding="ISO-8859-1") as f:
         for line in f.readlines():
@@ -119,5 +122,7 @@ if __name__ == "__main__":
     init_db(args.dbname)
     if (args.backup):
         backup(args.path, args.dbname)
-    if (args.restore):
+    elif (args.restore):
         restore(args.path, args.dbname, args.maxlines)
+    else:
+        parser.print_help()
