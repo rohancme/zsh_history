@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 import os
 import sqlite3
@@ -24,7 +24,7 @@ def init_db(db_name=default_db_location):
              (command text PRIMARY_KEY UNIQUE, history_line text,
              timestamp UNSIGNED BIG INT)""")
         conn.commit()
-        print "table created successfully"
+        print("table created successfully")
     conn.close()
 
 
@@ -34,8 +34,8 @@ def backup(history_path=None, db_name='zsh_history.db'):
         history_path = default_hist_location
 
     cmd_dict = {}
-    with open(history_path) as history_file:
-        for line in history_file:
+    with open(history_path, "r", encoding="ISO-8859-1") as f:
+        for line in f.readlines():
             line = line.rstrip('\n\t')
             arr = line.split(';')
             metadata = arr[0]
@@ -50,7 +50,7 @@ def backup(history_path=None, db_name='zsh_history.db'):
                     pass
 
     rows = []
-    for cmd, (line, timestamp) in cmd_dict.iteritems():
+    for cmd, (line, timestamp) in cmd_dict.items():
         rows = rows + [(cmd, line, timestamp)]
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
