@@ -6,10 +6,8 @@ import argparse
 import re
 
 home_folder = os.environ['HOME']
-#default_db_location = '/'.join([home_folder, '.zsh_hist_backup.db'])
-default_db_location = '/'.join(['/tmp/', '.zsh_hist_backup.db'])
-#default_hist_location = '/'.join([home_folder, '.zsh_history'])
-default_hist_location = '/'.join(['/tmp/', '.zsh_history'])
+default_db_location = '/'.join([home_folder, '.zsh_hist_backup.db'])
+default_hist_location = '/'.join([home_folder, '.zsh_history'])
 default_table_name = 'CMD_HISTORY'
 
 
@@ -49,10 +47,8 @@ def backup(history_path=None, db_name='zsh_history.db'):
         commands = command_pattern.findall(str(f.read()))
         print(len(commands))
         print(commands[0][0:200])
-        # exit()
 
     for command_entry in commands:
-        print("COMMAND: %s" % command_entry)
         arr = command_entry.split(';')
         metadata = arr[0]
         # remove metadata section for the "command" string
@@ -107,7 +103,6 @@ def restore(history_path=None, db_name=None, max_lines=None):
         new_lines = max_lines - len(prev_file_lines)
     file_lines = []
     for cmd, line, timestamp in prev_history:
-#        print("COMMAND: %s" % cmd)
         print("COMMAND ENTRY: %s" % line)
         print("END==============")
         if new_lines != -1 and len(file_lines) > new_lines:
