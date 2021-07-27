@@ -115,7 +115,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--dbname', dest='dbname',
                         help='SQLite db name', default=default_db_location)
     parser.add_argument('-m', '--maxlines', dest='maxlines',
-                        help='maximum size of history file', default=-1)
+                        help='maximum size of history file', default=None)
     parser.add_argument('-b', '--backup', dest='backup', action='store_true')
     parser.add_argument('-r', '--restore', dest='restore', action='store_true')
     args = parser.parse_args()
