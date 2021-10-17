@@ -3,6 +3,7 @@
 import os
 import sqlite3
 import argparse
+import re
 
 home_folder = os.environ['HOME']
 default_db_location = '/'.join([home_folder, '.zsh_hist_backup.db'])
@@ -28,6 +29,8 @@ def init_db(db_name=default_db_location):
     conn.close()
 
 
+# BACKUP could pollute DB if bad hist file passed
+# TODO - first backup db file to backups dir (run from wrapper script)
 def backup(history_path=None, db_name='zsh_history.db'):
     """Backup zsh history to a sqlite db."""
     if (history_path is None):
@@ -37,21 +40,32 @@ def backup(history_path=None, db_name='zsh_history.db'):
         print("Invalid path to zsh history:" + history_path)
         exit(-1)
     cmd_dict = {}
-    with open(history_path, "r", encoding="ISO-8859-1") as f:
-        for line in f.readlines():
-            line = line.rstrip('\n\t')
-            arr = line.split(';')
-            metadata = arr[0]
-            cmd = arr[1] if len(arr) > 1 else ""
-            # Handle empty lines
-            if cmd != "":
-                try:
-                    timestamp = int(metadata.split(': ')[1].split(':')[0])
-                    cmd_dict[cmd] = (line, timestamp)
-                except:
-                    # if a cmd can't be parsed ignore it
-                    pass
 
+    command_pattern = re.compile(': [0-9]{10,11}:[0-9]+;.+?(?=: [0-9]{10,11}:[0-9]+;|$)', re.MULTILINE|re.DOTALL)
+
+    with open(history_path, "r", encoding="ISO-8859-1") as f:
+        commands = command_pattern.findall(str(f.read()))
+        print(len(commands))
+        print(commands[0][0:200])
+
+    for command_entry in commands:
+        arr = command_entry.split(';')
+        metadata = arr[0]
+        # remove metadata section for the "command" string
+        cmd = command_entry[(len(metadata)+1):] if len(arr) > 1 else ""
+        # Handle empty lines
+        if cmd != "":
+            print("COMMAND: %s" % cmd)
+            print("END============")
+            try:
+                timestamp = int(metadata.split(': ')[1].split(':')[0])
+                # this keps a single occurence of the full multi-line command at the most recently noticed timestamp
+                # TODO - check if command exists and if timestamp is newer - we want to record the most recent time we ran this command
+                cmd_dict[cmd] = (command_entry, timestamp)
+            except:
+                # if a cmd can't be parsed ignore it
+                pass
+                
     rows = []
     for cmd, (line, timestamp) in cmd_dict.items():
         rows = rows + [(cmd, line, timestamp)]
@@ -64,6 +78,9 @@ def backup(history_path=None, db_name='zsh_history.db'):
     conn.close()
 
 
+# RESTORE overwrites the file
+# TODO - first copy file to another location (or do this from sh wrapper script)
+# TODO - first run backup to temp database (or do this from sh wrapper script)
 def restore(history_path=None, db_name=None, max_lines=None):
     """Append history from a sqlite db to the given history file."""
     """Creates the file if it doesn't exist"""
@@ -74,14 +91,6 @@ def restore(history_path=None, db_name=None, max_lines=None):
 
     cmd_dict = {}
     prev_file_lines = []
-    if os.path.isfile(history_path):
-        with open(history_path) as history_file:
-            for line in history_file:
-                line = line.rstrip('\n\t')
-                arr = line.split(';')
-                cmd = arr[1] if len(arr) > 1 else ""
-                cmd_dict[cmd] = line
-                prev_file_lines += [line + '\n']
 
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
@@ -90,9 +99,12 @@ def restore(history_path=None, db_name=None, max_lines=None):
     prev_history = cursor.fetchall()
     new_lines = -1
     if (max_lines is not None):
+        max_lines=int(max_lines)
         new_lines = max_lines - len(prev_file_lines)
     file_lines = []
     for cmd, line, timestamp in prev_history:
+        print("COMMAND ENTRY: %s" % line)
+        print("END==============")
         if new_lines != -1 and len(file_lines) > new_lines:
             break
         if cmd not in cmd_dict:
